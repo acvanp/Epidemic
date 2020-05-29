@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590600044286.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "9EF24A01",
+    "lastKnownWriteTime" : 1590600275,
+    "last_content_update" : 1590600275667,
+    "path" : "C:/Users/Lenovo/Epidemic/RShiny SIR toy A-B-epi-model/Repidmodelscenariocomparison_Apr2020.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "16,25",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590600032497.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4B41C93C",
+    "lastKnownWriteTime" : 1590600168,
+    "last_content_update" : 1590600168685,
+    "path" : "C:/Users/Lenovo/Epidemic/RShiny SIR toy A-B-epi-model/Repidmodelfunction_Apr2020.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "428,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
