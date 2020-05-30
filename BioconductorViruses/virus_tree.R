@@ -229,16 +229,16 @@ plot.phylo(tree, type="unrooted", cex=0.6, tip.color=tipcolor,
 
 # https://guangchuangyu.github.io/ggtree-book/chapter-ggtree.html
 #ggtree(virusTree,  layout='circular') + geom_tiplab(size=3, aes(angle=angle)) + theme(legend.position="none")+ aes(color=I(color))
-ggtree(tree,  layout='circular' ) + 
-  ggtitle("Covid19 Outter Circle") + 
+ggtree(tree,  layout='circular',  branch.length='none' ) + 
+  ggtitle("Covid19 Cladogram Circle Plot") + 
   geom_tiplab(size=3.2, aes(angle=angle)) + 
   theme(legend.position="none") + 
-  ggplot2::xlim(0.00008, 0.01) +
+  #ggplot2::xlim(0.00008, 0.01) +
   theme(text = element_text(size=10))
 
-ggtree(tree,  layout='circular' ) + 
-  ggtitle("Covid19 Inner Circle") + 
-  geom_tiplab(size=3.2, aes(angle=angle)) + 
+ggtree(tree,  layout='slanted',  branch.length="none" ) + coord_flip()+ 
+  ggtitle("Covid19 Cladogram Slanted Plot") + 
+  geom_tiplab(size=3.2, aes(angle=90)) + 
   theme(legend.position="none") + 
-  ggplot2::xlim(0.0000001, 0.00016) +
+  ggplot2::xlim(0,20) +
   theme(text = element_text(size=10))
