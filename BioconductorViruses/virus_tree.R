@@ -128,20 +128,30 @@ ggtree(tree, aes(color=group, linetype=group)) +
 
 
 # https://www.sciencemag.org/news/2020/01/mining-coronavirus-genomes-clues-outbreak-s-origins
-virus_accession_numbers = c("MT525950", "NC_045512", "MT528599",
-                            "LC542976", 
-                            "MT066156",  "MT079847",
+virus_accession_numbers = c("MT525950", "NC_045512", "MT517437",
+                            "LC542976", "MT509959", "MT510999",
+                            "MT066156",  "MT079847", "MT509657",
                             "MT106053", "MT093571","MT517430",
                             "MT152824", "MT511696", "MT511077", 
-                            "MT509685", "MT510643")
+                            "MT509685", "MT510643", "MT507274",
+                            "MT506897", 
+                            "MT482145", "MT470150", "MT459908",
+                            "MT457400", "MT451835", "MT450927",
+                             "MT419821", "MT412265",
+                            "MT394864", "MT359866")
 
 #taxonomic labels
-virus_names = c("Italya", "Wuhan", "USA", 
-                "Japan",
-                "Italyb", "China",
+virus_names = c("Italy1", "Wuhan", "Taiwan",
+                "Japan", "India1", "Netherlands1",
+                "Italy2", "China", "India2",
                 "USACA", "Sweden", "CzechRep",
                 "USAWA", "USAFL", "Poland", 
-                "USAMI", "Russia")
+                "USAMI", "Russia", "Jamaica",
+                "USAIL",
+                "USAVA", "France", "Greece",
+                "Netherlands2", "Australia1", "Australia2",
+               "PuertoRico", "USACT", 
+                "Germany", "Spain")
 
 
 virus_sequences = read.GenBank(virus_accession_numbers)
@@ -212,78 +222,23 @@ tree = bionj(JSdist)
 #tree$tip.label = virus_names[which(n %in% rownames(M))]
 plot(tree, main="Viral RNA Difference Tree", cex = 0.8)
 
+plot.phylo(tree, type="unrooted", cex=0.6, tip.color=tipcolor,
+           rotate.tree=140)
 
-#####################
 
-virus_locations = c("USA: CA", "USA: WA", 
-                    "USA: FL", "USA: NY",
-                    "Wuhan",  "China",
-                    "Italy", "Germany",
-                    "UK", "France",
-                    "Spain", "Canada",
-                    "Iran", "Russia",
-                    "India", "Brazil",
-                    "Japan")
-
-ll = c()
-
-search_hits = c()
-
-accession_number_list = c()
-
-for(i in 1:length(virus_locations)){
-  t = paste("SARS-CoV-2 AND Human[Organism]AND ", virus_locations[i], sep = "")
-  m = entrez_search(db = "nuccore", term = t, retmax = 2)
-  search_hits[i] = m$count
-  l = length(m$id)
-  m = entrez_fetch(db="nuccore", id=m$ids, rettype="fasta")
-  
-  for(k in 1:l){
-  if(k == 1){n = gsub('^.*>\\s*|\\s* .*$', '', m) 
-  accession_number_list = append(accession_number_list, n)}else({
-    n = gsub(paste0(n,'^.*>\\s*|\\s* .*$'), '', m);
-    accession_number_list = append(accession_number_list, n)
-  })
-  }
-  
-  ll = append(ll, m)
-}
-
-accession_number_list = gsub('>','',accession_number_list)
-
-setwd("C:\\Users\\Lenovo\\Epidemic\\BioconductorViruses\\virus_sequences3")
-write(ll, "viruses.fasta", sep="\n")
-viruss_COI_seqinr_format <- read.fasta("viruses.fasta")
-
-virusSeq <- readAAStringSet("viruses.fasta")
-virusAln <- msa(virusSeq)
-## use default substitution matrix
-
-virusAln
-
-virusAln2 <- msaConvert(virusAln, type="seqinr::alignment")
-
-d <- dist.alignment(virusAln2, "identity")
-
-virusTree <- nj(d)
-
-nameslist = c()
-
-for(i in 1:length(virus_locations)){
-  if(search_hits[i] > 2){
-    nameslist=append(nameslist, rep(virus_locations[i],2))}else(
-      nameslist=append(nameslist, rep(virus_locations[i], search_hits[i]))
-    )
-}
-
-df = data.frame(accession_number_list, nameslist)
-
-virusTree$tip.label = nameslist
-
-plot(virusTree, main="Covid19 Virus RNA by Location Plot", cex = 0.8)
-
-#virusTree = groupOTU(virusTree, virusTree$tip.label)
 
 # https://guangchuangyu.github.io/ggtree-book/chapter-ggtree.html
 #ggtree(virusTree,  layout='circular') + geom_tiplab(size=3, aes(angle=angle)) + theme(legend.position="none")+ aes(color=I(color))
-ggtree(virusTree,  layout='circular') + geom_tiplab(size=3, aes(angle=angle)) + theme(legend.position="none")
+ggtree(tree,  layout='circular' ) + 
+  ggtitle("Covid19 Outter Circle") + 
+  geom_tiplab(size=3.2, aes(angle=angle)) + 
+  theme(legend.position="none") + 
+  ggplot2::xlim(0.00008, 0.01) +
+  theme(text = element_text(size=10))
+
+ggtree(tree,  layout='circular' ) + 
+  ggtitle("Covid19 Inner Circle") + 
+  geom_tiplab(size=3.2, aes(angle=angle)) + 
+  theme(legend.position="none") + 
+  ggplot2::xlim(0.0000001, 0.00016) +
+  theme(text = element_text(size=10))
