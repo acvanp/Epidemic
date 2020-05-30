@@ -147,7 +147,8 @@ virus_names = c("Italya", "Wuhan", "USA",
 virus_sequences = read.GenBank(virus_accession_numbers)
 
 # https://bioinformaticshome.com/bioinformatics_tutorials/R/phylogeny_estimation.html
-setwd("C:\\Users\\Lenovo\\Documents\\Demo\\virus_sequences2")
+
+setwd("C:\\Users\\Lenovo\\Epidemic\\BioconductorViruses\\virus_sequences2")
 for(i in 1:length(virus_accession_numbers)){
   write.dna(read.GenBank(virus_accession_numbers[i]), 
             file = paste(virus_accession_numbers[i], ".fasta", sep=""), 
@@ -214,7 +215,7 @@ plot(tree, main="Viral RNA Difference Tree", cex = 0.8)
 
 #####################
 
-virus_locations = c(  "USA: CA", "USA: WA", 
+virus_locations = c("USA: CA", "USA: WA", 
                     "USA: FL", "USA: NY",
                     "Wuhan",  "China",
                     "Italy", "Germany",
@@ -225,14 +226,32 @@ virus_locations = c(  "USA: CA", "USA: WA",
                     "Japan")
 
 ll = c()
+
+search_hits = c()
+
+accession_number_list = c()
+
 for(i in 1:length(virus_locations)){
   t = paste("SARS-CoV-2 AND Human[Organism]AND ", virus_locations[i], sep = "")
-  m = entrez_search(db = "nuccore", term = t, retmax = 1)
+  m = entrez_search(db = "nuccore", term = t, retmax = 2)
+  search_hits[i] = m$count
+  l = length(m$id)
   m = entrez_fetch(db="nuccore", id=m$ids, rettype="fasta")
+  
+  for(k in 1:l){
+  if(k == 1){n = gsub('^.*>\\s*|\\s* .*$', '', m) 
+  accession_number_list = append(accession_number_list, n)}else({
+    n = gsub(paste0(n,'^.*>\\s*|\\s* .*$'), '', m);
+    accession_number_list = append(accession_number_list, n)
+  })
+  }
+  
   ll = append(ll, m)
 }
 
-setwd("C:\\Users\\Lenovo\\BioconductorTrees\\virus_sequences3")
+accession_number_list = gsub('>','',accession_number_list)
+
+setwd("C:\\Users\\Lenovo\\Epidemic\\BioconductorViruses\\virus_sequences3")
 write(ll, "viruses.fasta", sep="\n")
 viruss_COI_seqinr_format <- read.fasta("viruses.fasta")
 
@@ -248,16 +267,18 @@ d <- dist.alignment(virusAln2, "identity")
 
 virusTree <- nj(d)
 
-df = data.frame(color=sample(c('red', 'blue', 'green'), 
-                             length(virusTree$tip.label), replace=T))
+nameslist = c()
 
-rownames(df) = virus_locations[1:length(ll)]
-virusTree$tip.label = virus_locations
-#virusTree = phylo4d(as(virusTree, 'phylo4'), df)
-
-for(i in 1:length(virusTree$tip.label)){
-  virusTree$tip.label[i] = paste(strsplit(virusTree$tip.label, " ")[[i]][2:3], collapse = " ")
+for(i in 1:length(virus_locations)){
+  if(search_hits[i] > 2){
+    nameslist=append(nameslist, rep(virus_locations[i],2))}else(
+      nameslist=append(nameslist, rep(virus_locations[i], search_hits[i]))
+    )
 }
+
+df = data.frame(accession_number_list, nameslist)
+
+virusTree$tip.label = nameslist
 
 plot(virusTree, main="Covid19 Virus RNA by Location Plot", cex = 0.8)
 
