@@ -128,6 +128,10 @@ ggtree(tree, aes(color=group, linetype=group)) +
 
 
 # https://www.sciencemag.org/news/2020/01/mining-coronavirus-genomes-clues-outbreak-s-origins
+
+# accession numbers copied from:
+# https://www.ncbi.nlm.nih.gov/genbank/sars-cov-2-seqs/
+
 virus_accession_numbers = c("MT525950", "NC_045512", "MT517437",
                             "LC542976", "MT509959", "MT510999",
                             "MT066156",  "MT079847", "MT509657",
@@ -138,11 +142,12 @@ virus_accession_numbers = c("MT525950", "NC_045512", "MT517437",
                             "MT482145", "MT470150", "MT459908",
                             "MT457400", "MT451835", "MT450927",
                              "MT419821", "MT412265",
-                            "MT394864", "MT359866")
+                            "MT394864", "LR757995",
+                            "LC547520", "LR757997", "MN938390")
 
 #taxonomic labels
 virus_names = c("Italy1", "Wuhan", "Taiwan",
-                "Japan", "India1", "Netherlands1",
+                "Japan1", "India1", "Netherlands1",
                 "Italy2", "China", "India2",
                 "USACA", "Sweden", "CzechRep",
                 "USAWA", "USAFL", "Poland", 
@@ -151,7 +156,8 @@ virus_names = c("Italy1", "Wuhan", "Taiwan",
                 "USAVA", "France", "Greece",
                 "Netherlands2", "Australia1", "Australia2",
                "PuertoRico", "USACT", 
-                "Germany", "Spain")
+                "Germany", "Wuhan2",
+               "Japan2", "Wuhan3", "ChinaShenzen")
 
 
 virus_sequences = read.GenBank(virus_accession_numbers)
@@ -165,6 +171,7 @@ for(i in 1:length(virus_accession_numbers)){
             format = "fasta", append =
               FALSE, nbcol = 6, colsep = " ", colw = 10)
  i = i+1
+ print(i)
 }
 
 #virusSeq <- readAAStringSet("virus_sequences1.fasta")
@@ -231,14 +238,14 @@ plot.phylo(tree, type="unrooted", cex=0.6, tip.color=tipcolor,
 #ggtree(virusTree,  layout='circular') + geom_tiplab(size=3, aes(angle=angle)) + theme(legend.position="none")+ aes(color=I(color))
 ggtree(tree,  layout='circular',  branch.length='none' ) + 
   ggtitle("Covid19 Cladogram Circle Plot") + 
-  geom_tiplab(size=3.2, aes(angle=angle)) + 
+  geom_tiplab(size=3.6, aes(angle=angle)) + 
   theme(legend.position="none") + 
   #ggplot2::xlim(0.00008, 0.01) +
   theme(text = element_text(size=10))
 
 ggtree(tree,  layout='slanted',  branch.length="none" ) + coord_flip()+ 
   ggtitle("Covid19 Cladogram Slanted Plot") + 
-  geom_tiplab(size=3.2, aes(angle=90)) + 
+  geom_tiplab(size=3.6, aes(angle=90)) + 
   theme(legend.position="none") + 
   ggplot2::xlim(0,20) +
   theme(text = element_text(size=10))
