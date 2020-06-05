@@ -24,7 +24,7 @@ library("phylobase")
 virus_accession_numbers = c("MT525950", "NC_045512", "MT528599", 
                             "AY278489", "AY278741.1", "Z86099.2", 
                             "AB618031.1", "CY121680", "CY098755", 
-                            "MF797870", " KT029139.1")
+                            "MF797870", " KT029139.1", "MH481611", "AF033819.3")
 
 virus_sequences = read.GenBank(virus_accession_numbers)
 
@@ -72,9 +72,9 @@ kmer_features <- lapply(seqdat_join, function(k) kmercount(k))
 M <- do.call(rbind, kmer_features)
 
 #taxonomic labels
-virus_names = c("sars2Italy", "sars2Wuhan", "sars2USA", "sars1a",
+virus_names = c("COVID19Italy", "COVID19Wuhan", "COVID19USA", "sars1a",
                 "sars1b", "herpes2", "herpes1", 
-                "swine_flu_H1N1", "bird_flu_H5N1", "WNV", "MERS")
+                "swine_flu_H1N1", "bird_flu_H5N1", "WNV", "MERS", "Ebola", "HIV")
 
 n = gsub("\\..*","", virus_accession_numbers)
 
@@ -108,23 +108,46 @@ plot.phylo(tree, cex=0.8, tip.color=tipcolor,
 plot(tree, main="Viral RNA Difference Tree", cex = 0.8)
 
 # see node numbering three lines down 
-tree = groupClade(tree, .node = c(12, 13, 15, 17, 19,20))
+tree = groupClade(tree, .node = c(14, 15, 17,  19, 20, 21, 23, 24))
 
-ggtree(tree, aes(color=group, linetype=group)) + 
+ggtree(tree, aes(color=group, linetype=group), 
+       layout='slanted',  branch.length= 'none' ) + 
+  coord_flip()+
+  geom_tiplab(size=3.6, aes(angle=90)) + 
   ggtitle("Viral RNA Difference Tree") + 
   #geom_text(aes(label = node)) + # number the nodes before final plotting to configure groupClade
-  geom_tiplab(aes(subset=(group==1))) +
-  geom_tiplab(aes(subset=(group==2))) +
-  geom_tiplab(aes(subset=(group==3))) +
-  geom_tiplab(aes(subset=(group==4))) +
-  geom_tiplab(aes(subset=(group==5))) + 
-  geom_tiplab(aes(subset=(group==6))) + 
-  ggplot2::xlim(0, 0.29) + 
-  scale_color_manual(labels = c("MERS", "SARS1", "Covid19", "Influenza", "West Nile Virus", "Herpes"), 
-                     values = c( "black", "navy","red" , "purple", "magenta", "orange") ) +
-  guides(color = guide_legend(override.aes = list(linetype = c('solid','solid','solid', 'solid', 'solid', "solid"))),
+   ggplot2::xlim(0, 10) + 
+  scale_color_manual(labels = c("SARS1", "MERS", "Covid19", 
+                                "Ebola", "HIV", "Influenza", 
+                                "West Nile Virus", "Herpes"), 
+                     values = c( "black", "navy","red" , 
+                                 "purple", "darkgreen", "coral3",
+                                 "magenta", "orange") ) +
+  guides(color = guide_legend(
+    override.aes = list(linetype = c('solid','solid','solid', 
+                                     'solid', 'solid', "solid", 
+                                     'solid', "solid"))),
          linetype = FALSE)
 
+
+
+ggtree(tree, aes(color=group, linetype=group), 
+       layout='circular',  branch.length= 'none' ) + 
+  geom_tiplab(size=3.6) + 
+  ggtitle("Viral RNA Difference Tree") + 
+  #geom_text(aes(label = node)) + # number the nodes before final plotting to configure groupClade
+  ggplot2::xlim(0, 10) + 
+  scale_color_manual(labels = c("SARS1", "MERS", "Covid19", 
+                                "Ebola", "HIV", "Influenza", 
+                                "West Nile Virus", "Herpes"), 
+                     values = c( "black", "navy","red" , 
+                                 "purple", "darkgreen", "coral3",
+                                 "magenta", "orange") ) +
+  guides(color = guide_legend(
+    override.aes = list(linetype = c('solid','solid','solid', 
+                                     'solid', 'solid', "solid", 
+                                     'solid', "solid"))),
+    linetype = FALSE)
 
 
 
