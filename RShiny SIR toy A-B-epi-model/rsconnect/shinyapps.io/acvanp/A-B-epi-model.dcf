@@ -5,8 +5,8 @@ account: acvanp
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2161190
-bundleId: 3196642
+bundleId: 3247412
 url: https://acvanp.shinyapps.io/A-B-epi-model/
-when: 1590600586.99186
+when: 1591711347.8496
 asMultiple: FALSE
 asStatic: FALSE

@@ -43,19 +43,23 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             actionButton("update", "Plot Model Results"),
                                             
                                             # Input: Specify the number of observations to view ----
+                                            textInput("modelname", "Name your model (what kind of disease):", "Coronavirus (viral pneumonia)"),
+                                            helpText(""),
+                                            
+                                            # Input: Specify the number of observations to view ----
                                             numericInput("ntrials", "Number of trials the model is run (more trials takes longer to run):", 10),
                                             helpText(""),
                                             
                                             numericInput("pop", "City population:", 100000),
                                             helpText(""),
                                             
-                                            numericInput("daysrun", "Time in days the model simulates:", 45),
+                                            numericInput("daysrun", "Time in days the model simulates:", 60),
                                             helpText("More days may slow the model run."),
                                             
                                             numericInput("asympt.cont", "How contagious is an asymptomatic person? (from 0 to 1):", 0.15),
                                             helpText(""),
                                             
-                                            numericInput("sick.cont", "How contagious is a sick person? (from 0 to 1):", 0.65),
+                                            numericInput("sick.cont", "How contagious is a sick person? (from 0 to 1):", 0.45),
                                             helpText(""),
                                             
                                             numericInput("encounter.asymptomatic.nosocdist", "Encounters per day of asymptomatic people who do not practice distancing:", 8),
@@ -64,7 +68,7 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             numericInput("encounter.asymptomatic.socdist", "Encounters per day of asymptomatic people who practice distancing:", 0.5),
                                             helpText(""),
                                             
-                                            numericInput("encounter.sick.input", "Encounters per day of people suffering from flu symptoms:", 0.2),
+                                            numericInput("encounter.sick.input", "Encounters per day of people suffering from flu symptoms:", 0.15),
                                             helpText(""),
                                             
                                             numericInput("death.chance", "How deadly is the disease (from 0 to 1):", 0.02),
@@ -79,7 +83,7 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             numericInput("incub.pd", "Days from transmission to manifesting symptoms (incubation period):", 3),
                                             helpText(""),
                                             
-                                            numericInput("take.action", "How many people get sick in your city before imposing social distancing?:", 50),
+                                            numericInput("take.action", "How many people get sick in your city before imposing social distancing?:", 100),
                                             helpText("The model is seeded with 3 sick and 2 asymptomatic people"),
                                             
                                             numericInput("med.scarcity.factor", "What effect does the volume of sick cases have on death rate?:", 0.7),
@@ -91,7 +95,7 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             selectInput("virus.evolves.mildness", "Simulate progressively lower death rate as removal increases? ", c("no" = "no", "yes" = "yes")),
                                             helpText("Does the virus evolve to be less deadly?"),
                                             
-                                            numericInput("relax.socdist.mean.sick", "Relax social distancing when new confirmed cases goes below:", 10), 
+                                            numericInput("relax.socdist.mean.sick", "Relax social distancing when new confirmed cases goes below:", 3), 
                                             helpText("weekly mean of daily new confirmed cases")
                                             
                                             
@@ -120,13 +124,17 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             actionButton("update2", "Plot Model Results"),
                                             
                                             # Input: Specify the number of observations to view ----
+                                            textInput("modelname", "Name your model (what kind of disease):", "Ebola"),
+                                            helpText(""),
+                                            
+                                            # Input: Specify the number of observations to view ----
                                             numericInput("ntrials2", "Number of trials the model is run (more trials takes longer to run):", 10),
                                             helpText(""),
                                             
                                             numericInput("pop2", "City population:", 100000),
                                             helpText(""),
                                             
-                                            numericInput("daysrun2", "Time in days the model simulates:", 45),
+                                            numericInput("daysrun2", "Time in days the model simulates:", 60),
                                             helpText("More days may slow the model run."),
                                             
                                             numericInput("asympt.cont2", "How contagious is an asymptomatic person? (from 0 to 1):", 0.15),
@@ -141,22 +149,22 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             numericInput("encounter.asymptomatic.socdist2", "Encounters per day of asymptomatic people who practice distancing:", 0.5),
                                             helpText(""),
                                             
-                                            numericInput("encounter.sick.input2", "Encounters per day of people suffering from flu symptoms:", 0.2),
+                                            numericInput("encounter.sick.input2", "Encounters per day of people suffering from flu symptoms:", 0.15),
                                             helpText(""),
                                             
-                                            numericInput("death.chance2", "How deadly is the disease (from 0 to 1):", 0.02),
+                                            numericInput("death.chance2", "How deadly is the disease (from 0 to 1):", 0.7),
                                             helpText("Many flat-curve countries average at 1/21"),
                                             
-                                            numericInput("recover.time2", "Days after infection it takes for an infected person to recover:", 18),
+                                            numericInput("recover.time2", "Days after infection it takes for an infected person to recover:", 8),
                                             helpText(""),
                                             
-                                            numericInput("rate.asymptomatic2", "Fraction of infected people who are asymptomatic  (from 0 to 1):", 1/5),
+                                            numericInput("rate.asymptomatic2", "Fraction of infected people who are asymptomatic  (from 0 to 1):", 0.01),
                                             helpText("~1/5 for Coronavirus"),
                                             
                                             numericInput("incub.pd2", "Days from transmission to manifesting symptoms (incubation period):", 3),
                                             helpText(""),
                                             
-                                            numericInput("take.action2", "How many people get sick in your city before imposing social distancing?:", 50),
+                                            numericInput("take.action2", "How many people get sick in your city before imposing social distancing?:", 3),
                                             helpText("The model is seeded with 3 sick and 2 asymptomatic people"),
                                             
                                             numericInput("med.scarcity.factor2", "What effect does the volume of sick cases have on death rate?:", 0.7),
@@ -168,7 +176,7 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             selectInput("virus.evolves.mildness2", "Simulate progressively lower death rate as removal increases? ", c("no" = "no", "yes" = "yes")),
                                             helpText("Does the virus evolve to be less deadly?"),
                                             
-                                            numericInput("relax.socdist.mean.sick2", "Relax social distancing when new confirmed cases goes below:", 10), 
+                                            numericInput("relax.socdist.mean.sick2", "Relax social distancing when new confirmed cases goes below:", 0.5), 
                                             helpText("weekly mean of daily new confirmed cases")
                                             ),
                                           # Show a plot of the generated distribution
@@ -704,7 +712,7 @@ SIR.plotter = function(x){
              title = paste(pop, "population,", daysrun, "days,\n", 
                            deaths[daysrun], "deaths,", 
                            removed[daysrun], "true removal,", 
-                           confirmed[daysrun], " recorded", sep = " ")) + 
+                           confirmed[daysrun], " recorded cases", sep = " ")) + 
     scale_y_log10() + theme_minimal()
   
   

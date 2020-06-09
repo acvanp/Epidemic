@@ -147,7 +147,7 @@ p =
                title = paste(pop, "population,", daysrun, "days,\n", 
                              deaths[daysrun], "deaths,", 
                              removed[daysrun], "true removal,", 
-                             confirmed[daysrun], " recorded", sep = " ")) + 
+                             confirmed[daysrun], " recorded cases", sep = " ")) + 
   scale_y_log10() + theme_minimal()
 
 
