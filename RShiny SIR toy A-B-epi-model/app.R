@@ -47,19 +47,19 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             helpText(""),
                                             
                                             # Input: Specify the number of observations to view ----
-                                            numericInput("ntrials", "Number of trials the model is run (more trials takes longer to run):", 10),
+                                            numericInput("ntrials", "Number of trials the model is run (more trials takes longer to run):", 4),
                                             helpText(""),
                                             
                                             numericInput("pop", "City population:", 100000),
                                             helpText(""),
                                             
-                                            numericInput("daysrun", "Time in days the model simulates:", 60),
+                                            numericInput("daysrun", "Time in days the model simulates:", 120),
                                             helpText("More days may slow the model run."),
                                             
                                             numericInput("asympt.cont", "How contagious is an asymptomatic person? (from 0 to 1):", 0.15),
                                             helpText(""),
                                             
-                                            numericInput("sick.cont", "How contagious is a sick person? (from 0 to 1):", 0.45),
+                                            numericInput("sick.cont", "How contagious is a sick person? (from 0 to 1):", 0.52),
                                             helpText(""),
                                             
                                             numericInput("encounter.asymptomatic.nosocdist", "Encounters per day of asymptomatic people who do not practice distancing:", 8),
@@ -128,13 +128,13 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             helpText(""),
                                             
                                             # Input: Specify the number of observations to view ----
-                                            numericInput("ntrials2", "Number of trials the model is run (more trials takes longer to run):", 10),
+                                            numericInput("ntrials2", "Number of trials the model is run (more trials takes longer to run):", 4),
                                             helpText(""),
                                             
                                             numericInput("pop2", "City population:", 100000),
                                             helpText(""),
                                             
-                                            numericInput("daysrun2", "Time in days the model simulates:", 60),
+                                            numericInput("daysrun2", "Time in days the model simulates:", 120),
                                             helpText("More days may slow the model run."),
                                             
                                             numericInput("asympt.cont2", "How contagious is an asymptomatic person? (from 0 to 1):", 0.15),
