@@ -30,7 +30,7 @@ SIR.model = function(ntrials,
   
   confirmed.list = list()
   
-  succeptible.list = list()
+  susceptible.list = list()
   
   removed.list = list()
   
@@ -50,7 +50,7 @@ SIR.model = function(ntrials,
     #pop = 100000 # fixed population value 
     
     # seed the model with 5 infected people
-    succeptible = c(pop-5) #starting pop
+    susceptible = c(pop-5) #starting pop
     
     recover.chance = 1/recover.time
     
@@ -158,7 +158,7 @@ SIR.model = function(ntrials,
             )
                        # subtract the since-recovered people
           , mean = encounter.sick, sd = 0.75*encounter.sick, xi = 10))
-          ) #* (succeptible[i-1]/pop) # encounters multiplied by the availability of succiptible people
+          ) #* (susceptible[i-1]/pop) # encounters multiplied by the availability of succiptible people
           )
         
         
@@ -169,25 +169,25 @@ SIR.model = function(ntrials,
             infected.asymptomatic[i-incub.pd] - (recovered[i-1] - recovered[i-incub.pd]) * (rate.asymptomatic)
             ) # subtract the since-recovered people
           , mean = encounter.asymptomatic, sd = 0.75 * encounter.asymptomatic, xi = 10))
-          ) #* (succeptible[i-1]/pop) # encounters multiplied by the availability of succiptible people
+          ) #* (susceptible[i-1]/pop) # encounters multiplied by the availability of succiptible people
           )
         
         
         # with the rand.sick.encounters and rand.asympt encounters in hand,
-        # make a vector of 1's and 0's representing the total number of succeptible (1's) and removed (0's), excluding the number of dead who do not interact in the future
+        # make a vector of 1's and 0's representing the total number of susceptible (1's) and removed (0's), excluding the number of dead who do not interact in the future
         
-        shuffled.succeptible = c((1:succeptible[i-1])/(1:succeptible[i-1]), 0*(1: (removed[i-1] - deaths[i-1] ) ) )[sample(1:(pop - deaths[i-1] ), (pop - deaths[i-1] ), replace = FALSE)] 
+        shuffled.susceptible = c((1:susceptible[i-1])/(1:susceptible[i-1]), 0*(1: (removed[i-1] - deaths[i-1] ) ) )[sample(1:(pop - deaths[i-1] ), (pop - deaths[i-1] ), replace = FALSE)] 
         
-        rand.sick.encounters = sum(shuffled.succeptible[1:rand.sick.encounters]) # sum the 1's and 0's from the random interactions 
+        rand.sick.encounters = sum(shuffled.susceptible[1:rand.sick.encounters]) # sum the 1's and 0's from the random interactions 
         
-        shuffled.succeptible = c((1:succeptible[i-1])/(1:succeptible[i-1]), 0*(1: ( removed[i-1] - deaths[i-1] ) ) )[sample(1: (pop - deaths[i-1] ), (pop - deaths[i-1] ), replace = FALSE)] 
+        shuffled.susceptible = c((1:susceptible[i-1])/(1:susceptible[i-1]), 0*(1: ( removed[i-1] - deaths[i-1] ) ) )[sample(1: (pop - deaths[i-1] ), (pop - deaths[i-1] ), replace = FALSE)] 
         
-        rand.asympt.encounters = sum(shuffled.succeptible[1:rand.asympt.encounters]) # sum the 1's and 0's from the random interactions
+        rand.asympt.encounters = sum(shuffled.susceptible[1:rand.asympt.encounters]) # sum the 1's and 0's from the random interactions
         
         })
          
         
-        if(succeptible[i-1] > 0 && !is.na(rand.sick.encounters)){
+        if(susceptible[i-1] > 0 && !is.na(rand.sick.encounters)){
          # infections caused by encounters with sick people
           x = runif(rand.sick.encounters, 0, 1)
           # random interactions within the sick.contagiousness cutoff is a transmission to infected.new
@@ -195,7 +195,7 @@ SIR.model = function(ntrials,
         }
           
           # assume asymptomatic people have the chance to infect more people than sick people
-         if(succeptible[i-1] > 0 && !is.na(rand.sick.encounters)){
+         if(susceptible[i-1] > 0 && !is.na(rand.sick.encounters)){
            
            x = runif(rand.asympt.encounters, 0, 1)
            
@@ -210,8 +210,8 @@ SIR.model = function(ntrials,
         ) 
         )  
       
-      # if we run out of uninfected people in a trial, then infect all succeptibleing people
-      if(infected.new[i] > succeptible[i-1]){infected.new[i] = succeptible[i-1]; succeptible[i] = 0} # zero people succeptible
+      # if we run out of uninfected people in a trial, then infect all susceptibleing people
+      if(infected.new[i] > susceptible[i-1]){infected.new[i] = susceptible[i-1]; susceptible[i] = 0} # zero people susceptible
       
       # randomly decide who of the new infections are sick and asymptomatic
       asympt.new = 0 # counter variable 
@@ -302,13 +302,13 @@ SIR.model = function(ntrials,
       recovered[i] = recovered[i-1] + recovered.new.asympt + recovered.new.sick
       
       # assign a value to the removed category
-      #if(infected.new[i] == succeptible[i-1] | removed[i-1] == pop){
+      #if(infected.new[i] == susceptible[i-1] | removed[i-1] == pop){
       #  removed[i] = pop}else(
       removed[i] =   removed[i-1] + sick.new + asympt.new #+ removed[i-1] + infected.new[i])
       
-      # assign a value to the succeptibleing population
-      #if(!is.na(succeptible[i]) | succeptible[i-1] == 0){succeptible[i] = 0}else(succeptible[i] = pop - removed[i])
-      succeptible[i] = succeptible[i-1] - infected.new[i]
+      # assign a value to the susceptibleing population
+      #if(!is.na(susceptible[i]) | susceptible[i-1] == 0){susceptible[i] = 0}else(susceptible[i] = pop - removed[i])
+      susceptible[i] = susceptible[i-1] - infected.new[i]
       
       
     }
@@ -330,7 +330,7 @@ SIR.model = function(ntrials,
     
     confirmed.list[[p]] = confirmed
     
-    succeptible.list[[p]] =  succeptible
+    susceptible.list[[p]] =  susceptible
     
     removed.list[[p]] = removed
     
@@ -368,7 +368,7 @@ SIR.model = function(ntrials,
     recovered,
     deaths,
     removed,
-    succeptible,
+    susceptible,
     confirmed,
     
     # return time series from trials
@@ -379,7 +379,7 @@ SIR.model = function(ntrials,
     recovered.list,
     deaths.list,
     confirmed.list,
-    succeptible.list,
+    susceptible.list,
     removed.list)
   
   # give the items in the list names
@@ -409,7 +409,7 @@ SIR.model = function(ntrials,
     "recovered",
     "deaths",
     "removed",
-    "succeptible",
+    "susceptible",
     "confirmed",
     
     # return time series from trials
@@ -420,7 +420,7 @@ SIR.model = function(ntrials,
     "recovered.list",
     "deaths.list",
     "confirmed.list",
-    "succeptible.list",
+    "susceptible.list",
     "removed.list")
   
   return(x)

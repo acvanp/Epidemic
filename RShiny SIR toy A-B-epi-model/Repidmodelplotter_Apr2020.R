@@ -100,7 +100,7 @@ daysrun = x$daysrun
   
 if(daysrun == 1){
 
-succeptible = x$succeptible
+susceptible = x$susceptible
 pop = x$pop
 removed = x$removed
 recovered = x$recovered
@@ -113,7 +113,7 @@ sickvolume = x$infected.sick
   
   
   deaths = round(rowMeans(simplify2array( x$deaths.list )))
-  succeptible = round(rowMeans(simplify2array( x$succeptible.list )))
+  susceptible = round(rowMeans(simplify2array( x$susceptible.list )))
   removed = round(rowMeans(simplify2array( x$removed.list )))
   recovered = round(rowMeans(simplify2array( x$recovered.list )))
   confirmed = round(rowMeans(simplify2array( x$confirmed.list )))
@@ -123,7 +123,7 @@ sickvolume = x$infected.sick
   
 })
 
-df = cbind(c(1:daysrun), succeptible, removed, recovered, confirmed, deaths, sickvolume)
+df = cbind(c(1:daysrun), susceptible, removed, recovered, confirmed, deaths, sickvolume)
 
 colnames(df)[1] = "days"
 
