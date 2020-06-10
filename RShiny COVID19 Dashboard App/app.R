@@ -7,7 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
-#library(dplyr)
+library(dplyr)
 library(lubridate)
 library(shiny)
 library(leaflet)
@@ -76,11 +76,11 @@ server = function(input, output, session){
   rawdeaths = read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv")
   rawdeaths = rawdeaths[which(rawdeaths$Country_Region == "US"), abs(ncol(rawdata)-ncol(rawdeaths)):ncol(rawdeaths)]
   
-  confirmed.ar.us = aggregate(. ~ rawdata$Province_State, rawdata, FUN = sum)
+  confirmed.ar.us = aggregate(. ~ rawdata$Province_State, rawdata[which(colnames(rawdata)=="X1.22.20"):ncol(rawdata)], FUN = sum)
   
-  US.latlon =  aggregate(. ~ rawdata$Province_State, rawdata, FUN = median)
+  US.latlon =  aggregate(. ~ rawdata$Province_State, rawdata[,which(colnames(rawdata) %in% c("Lat", "Long_"))], FUN = median)
   
-  deaths.ar.us = aggregate(. ~ rawdeaths$Province_State, rawdeaths, FUN = sum)
+  deaths.ar.us = aggregate(. ~ rawdeaths$Province_State, rawdeaths[which(colnames(rawdeaths)=="X1.22.20"):ncol(rawdeaths)], FUN = sum)
     
   # get rid of nuisance US entry that does not contain data
   #confirmed.ar.us = confirmed.ar.us[which(confirmed.ar.us$Province.State != "US"),]
@@ -111,85 +111,132 @@ server = function(input, output, session){
   
   x = confirmed[which(confirmed$Country.Region ==  "China"),]
   confirmed.china = x
-  confirmed.china = aggregate(. ~ confirmed.china$Country.Region, confirmed.china, FUN = sum)
+  confirmed.china = aggregate(. ~ confirmed.china$Country.Region, confirmed.china[,which(colnames(x)=="X1.22.20"):ncol(x)], FUN = sum)
   # aggregating adds a nuisance column
-  confirmed.china = confirmed.china[,2:ncol(confirmed.china)]
+  #confirmed.china = confirmed.china[,2:ncol(confirmed.china)]
   #GPS
+  
+  confirmed.china$Province.State = ""
+  confirmed.china$Country.Region = "China"
   confirmed.china$Lat = mean(x$Lat)
   confirmed.china$Long = mean(x$Long)
-  confirmed.china$Country.Region = "China"
-  confirmed.china$Province.State = ""
   
   # global total confirmed cases
   confirmed.global = confirmed
   confirmed.global$Province.State = ""
-  confirmed.global = aggregate(. ~ confirmed.global$Province.State, confirmed, FUN = sum)
-  confirmed.global = confirmed.global[,2:ncol(confirmed.global)]
-  colnames(confirmed.global) = colnames(confirmed)
+  confirmed.global = aggregate(. ~ confirmed.global$Province.State, confirmed[,which(colnames(confirmed)=="X1.22.20"):ncol(confirmed)], FUN = sum)
+  #confirmed.global = confirmed.global[,2:ncol(confirmed.global)]
+  #colnames(confirmed.global) = colnames(confirmed)
+  confirmed.global$Province.State = ""
+  confirmed.global$Country.Region = "Global" # give info for popup label  
+  confirmed.global$Lat = 30
+  confirmed.global$Long = -30
   
-  confirmed.global[1,c(1:2)] = c("", "Global") # give info for popup label  
-  confirmed.global[1, c(3:4)] = c(30, -30)
+  
+  confirmed.ar.us$Province_State = confirmed.ar.us$`rawdata$Province_State`
+  #deaths.ar.us$Province_State = deaths.ar.us$`rawdeaths$Province_State`
   
   # match number of columns for US and global data frames
   confirmed.ar.us$Country_Region = "US"
-  deaths.ar.us$Country_Region = "US"
-  
-  confirmed.ar.us$Province_State = confirmed.ar.us$`rawdata$Province_State`
-  deaths.ar.us$Province_State = deaths.ar.us$`rawdeaths$Province_State`
+  #deaths.ar.us$Country_Region = "US"
   
   confirmed.ar.us$Lat = US.latlon$Lat
-  deaths.ar.us$Lat = US.latlon$Lat
+  #deaths.ar.us$Lat = US.latlon$Lat
   
   confirmed.ar.us$Long_ = US.latlon$Long_
-  deaths.ar.us$Long_ = US.latlon$Long_
+  #deaths.ar.us$Long_ = US.latlon$Long_
   
-  confirmed.ar.us = confirmed.ar.us[, 8:ncol(confirmed.ar.us)]
-  deaths.ar.us   = deaths.ar.us[, 8:ncol(deaths.ar.us)]
+  #confirmed.ar.us = confirmed.ar.us[, 8:ncol(confirmed.ar.us)]
+  #deaths.ar.us   = deaths.ar.us[, 8:ncol(deaths.ar.us)]
   
   confirmed.ar.us = confirmed.ar.us[, which(!colnames(confirmed.ar.us) %in% c("Combined_Key"))]
-  deaths.ar.us = deaths.ar.us[, which(!colnames(deaths.ar.us) %in% c("Combined_Key", "Population"))]
+  #deaths.ar.us = deaths.ar.us[, which(!colnames(deaths.ar.us) %in% c("Combined_Key", "Population"))]
   
-  colnames(confirmed.ar.us)[1:ncol(confirmed.global)] = colnames(confirmed.global)[1:ncol(confirmed.global)]
-  colnames(deaths.ar.us)[1:ncol(confirmed.global)] = colnames(confirmed.global)[1:ncol(confirmed.global)]
+  #colnames(confirmed.ar.us)[1:ncol(confirmed.global)] = colnames(confirmed.global)[1:ncol(confirmed.global)]
+  #colnames(deaths.ar.us)[1:ncol(confirmed.global)] = colnames(confirmed.global)[1:ncol(confirmed.global)]
   
   confirmed.ar.us = confirmed.ar.us[which(confirmed.ar.us$Long != 0), ]
-  deaths.ar.us = deaths.ar.us[which(deaths.ar.us$Long != 0), ]
+  #deaths.ar.us = deaths.ar.us[which(deaths.ar.us$Long != 0), ]
+  
+  confirmed.ar.us = confirmed.ar.us[,2:ncol(confirmed.ar.us)] 
+  confirmed.china = confirmed.china[,2:ncol(confirmed.china)] 
+  confirmed.global = confirmed.global[,2:ncol(confirmed.global)]
+  
   
   # combine global and US state case time series
-  confirmed = rbind(confirmed, confirmed.ar.us, confirmed.china, confirmed.global)
+  confirmed = cbind(confirmed[5:ncol(confirmed)], confirmed[1:4])
+  colnames(confirmed.ar.us)=colnames(confirmed)
+  colnames(confirmed.china)=colnames(confirmed)
+  colnames(confirmed.global)=colnames(confirmed)
   
+  confirmed = rbind(confirmed, 
+                    confirmed.ar.us, 
+                    confirmed.china, 
+                    confirmed.global)
+  
+  
+  confirmed = cbind(confirmed[, (ncol(confirmed)-3):ncol(confirmed)], confirmed[, 1:(ncol(confirmed)-4)])
+  confirmed.ar.us = cbind(confirmed.ar.us[, (ncol(confirmed.ar.us)-3):ncol(confirmed.ar.us)], confirmed.ar.us[, 1:(ncol(confirmed.ar.us)-4)])
   # again for deaths
   deaths = read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")
   
   # fix US column names
   #colnames(deaths.ar.us) = colnames(deaths)
-  
-  # special china entry
   x = deaths[which(deaths$Country.Region ==  "China"),]
   deaths.china = x
-  deaths.china = aggregate(. ~ deaths.china$Country.Region, deaths.china, FUN = sum)
+  deaths.china = aggregate(. ~ deaths.china$Country.Region, deaths.china[,which(colnames(x)=="X1.22.20"):ncol(x)], FUN = sum)
   # aggregating adds a nuisance column
-  deaths.china = deaths.china[, 2:ncol(deaths.china)]
+  #deaths.china = deaths.china[,2:ncol(deaths.china)]
   #GPS
+  
+  deaths.china$Province.State = ""
+  deaths.china$Country.Region = "China"
   deaths.china$Lat = mean(x$Lat)
   deaths.china$Long = mean(x$Long)
-  deaths.china$Country.Region = "China"
-  deaths.china$Province.State = ""
-  
   
   # global total deaths cases
   deaths.global = deaths
   deaths.global$Province.State = ""
-  deaths.global = aggregate(. ~ deaths.global$Province.State, deaths, FUN = sum)
-  deaths.global = deaths.global[,2:ncol(deaths.global)]
-  colnames(deaths.global) = colnames(deaths)
+  deaths.global = aggregate(. ~ deaths.global$Province.State, deaths[,which(colnames(deaths)=="X1.22.20"):ncol(deaths)], FUN = sum)
+  #deaths.global = deaths.global[,2:ncol(deaths.global)]
+  #colnames(deaths.global) = colnames(deaths)
+  deaths.global$Province.State = ""
+  deaths.global$Country.Region = "Global" # give info for popup label  
+  deaths.global$Lat = 30
+  deaths.global$Long = -30
   
-  deaths.global[1,c(1:2)] = c("", "Global")
-  deaths.global[1, c(3:4)] = c(30, -30) # give info for popup label
+  deaths.ar.us$Province_State = deaths.ar.us$`rawdeaths$Province_State`
+  
+  # match number of columns for US and global data frames
+  deaths.ar.us$Country_Region = "US"
+  deaths.ar.us$Lat = US.latlon$Lat
+  deaths.ar.us$Long_ = US.latlon$Long_
+  deaths.ar.us = deaths.ar.us[, which(!colnames(deaths.ar.us) %in% c("Combined_Key", "Population"))]
+  
+  #colnames(deaths.ar.us)[1:ncol(deaths.global)] = colnames(deaths.global)[1:ncol(deaths.global)]
+  #colnames(deaths.ar.us)[1:ncol(deaths.global)] = colnames(deaths.global)[1:ncol(deaths.global)]
+  
+  deaths.ar.us = deaths.ar.us[which(deaths.ar.us$Long != 0), ]
+  
+  deaths.ar.us = deaths.ar.us[,2:ncol(deaths.ar.us)] 
+  deaths.china = deaths.china[,2:ncol(deaths.china)] 
+  deaths.global = deaths.global[,2:ncol(deaths.global)]
+  
   
   # combine global and US state case time series
-  deaths = rbind(deaths, deaths.ar.us, deaths.china, deaths.global)
+  deaths = cbind(deaths[5:ncol(deaths)], deaths[1:4])
+  colnames(deaths.ar.us)=colnames(deaths)
+  colnames(deaths.china)=colnames(deaths)
+  colnames(deaths.global)=colnames(deaths)
   
+  deaths = rbind(deaths, 
+                    deaths.ar.us, 
+                    deaths.china, 
+                    deaths.global)
+  
+  deaths = cbind(deaths[, (ncol(deaths)-3):ncol(deaths)], deaths[, 1:(ncol(deaths)-4)])
+  
+  deaths.ar.us = cbind(deaths.ar.us[, (ncol(deaths.ar.us)-3):ncol(deaths.ar.us)], deaths.ar.us[, 1:(ncol(deaths.ar.us)-4)])
   
   # combine global and US state case time series
   
@@ -200,8 +247,7 @@ server = function(input, output, session){
   ###########################
   # labels for stat/country map
   labs = paste(confirmed$Province.State, confirmed$Country.Region, ": \n", as.character(confirmed[,ncol(confirmed)]), 
-               " confirmed,",  "\n", as.character(deaths[,ncol(deaths)]), " deaths,",  "\n",
-               as.character(recovered[,ncol(recovered)]), " recovered")
+               " confirmed,",  "\n", as.character(deaths[,ncol(deaths)]), " deaths,",  "\n")
   
   active = data.frame(cbind(deaths[,ncol(deaths)], confirmed[,ncol(confirmed)]))
   active$cols = c()
@@ -215,7 +261,7 @@ server = function(input, output, session){
                                     addTiles() %>%  # Add default OpenStreetMap map tiles
                                     addCircleMarkers(
                                       lng = confirmed$Long, lat = confirmed$Lat, 
-                                      radius = 1.5*log(as.numeric(confirmed[,ncol(confirmed)])+0.001),
+                                      radius = log(as.numeric(confirmed[,ncol(confirmed)])+0.001),
                                       weight = 1, color = "gray",
                                       fillColor = active$cols, fillOpacity = 0.7,
                                       popup=labs))
@@ -265,11 +311,9 @@ server = function(input, output, session){
       )  + geom_point(aes(color = variable, fill = variable)
       )  + scale_color_manual(
         values = c(
-          "gold", "darkred", "green"))+scale_fill_manual(
-            values = c(
-              "gold", "darkred", "green")
-          ) + labs(x = "Date", 
-                   y = "Cases",
+          "gold", "darkred"))+scale_fill_manual(
+            values = c("gold", "darkred")) + 
+      labs(x = "Date", y = "Cases",
                    title =  paste("State Data Selection ",
                                   as.character(confirmed$Province.State[n]),
                                   as.character(confirmed$Country.Region[n]),
@@ -295,7 +339,7 @@ server = function(input, output, session){
                                     addTiles() %>%  # Add default OpenStreetMap map tiles
                                     addCircleMarkers(
                                       lng = local.cases$Long_, lat = local.cases$Lat, 
-                                      radius = 1.5*log(as.numeric(local.cases$Confirmed)+0.001),
+                                      radius = log(as.numeric(local.cases$Confirmed)+0.001),
                                       weight = 1, color = "gray",
                                       fillColor = "magenta", fillOpacity = 0.7,
                                       popup=local.labels))  
