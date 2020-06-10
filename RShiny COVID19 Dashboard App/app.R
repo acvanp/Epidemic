@@ -93,7 +93,9 @@ server = function(input, output, session){
   #local.cases[which(local.cases$Country_Region == "US"),]
   
   local.cases[which(local.cases$Combined_Key == "Wayne,Michigan,US"),"Long_"] = rawdata[which(rawdata$Combined_Key == "Wayne, Michigan, US"),"Long_"]
-  
+  local.cases$Lat[which(local.cases$Combined_Key == "Southwest Utah, Utah, US")] = 37.87777
+  rawdata$Lat[which(rawdata$Combined_Key == "Southwest Utah, Utah, US")] = 37.87777
+  rawdeaths$Lat[which(rawdeaths$Combined_Key == "Southwest Utah, Utah, US")] = 37.87777
   # why are some local data plots not working (Houston, Tx; Wayne Michigan)
   
   #remove lat/lon of zero
@@ -332,8 +334,7 @@ server = function(input, output, session){
   
   local.labels = paste(local.cases$Combined_Key, ":", 
                        local.cases$Confirmed, " confirmed,", 
-                       local.cases$Deaths, " deaths,", 
-                       local.cases$Recovered, " recovered")
+                       local.cases$Deaths, " deaths")
   
   output$LocalMap = renderLeaflet(leaflet() %>%
                                     addTiles() %>%  # Add default OpenStreetMap map tiles
@@ -390,9 +391,9 @@ server = function(input, output, session){
       )  + geom_point(aes(color = variable, fill = variable)
       )  + scale_color_manual(
         values = c(
-          "gold", "darkred", "green"))+scale_fill_manual(
+          "gold", "darkred"))+scale_fill_manual(
             values = c(
-              "gold", "darkred", "green")
+              "gold", "darkred")
           ) + labs(x = "Date", 
                    y = "Cases",
                    title =  paste("Local Data Selection \n ", rawdata$Combined_Key[m],
