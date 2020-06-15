@@ -30,7 +30,8 @@ ui <- fluidPage(
                                         column(7, h4("Click a site"), 
                                                leafletOutput("StateMap", height = "380px"))
                                         ,
-                                        column(5, plotOutput("stateplot"))
+                                        column(5, plotOutput("stateplot")),
+                                        column(5, plotOutput("stateplotNewCases"))
                                ) 
                                ,
                                tabPanel("US Local Data", 
@@ -72,9 +73,11 @@ server = function(input, output, session){
   # all time series and local data
   rawdata = read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv")
   rawdata = rawdata[which(rawdata$Country_Region == "US"),]
+  rawdata = rawdata[with(rawdata, order(rawdata$UID)),]
   
   rawdeaths = read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv")
   rawdeaths = rawdeaths[which(rawdeaths$Country_Region == "US"), abs(ncol(rawdata)-ncol(rawdeaths)):ncol(rawdeaths)]
+  rawdeaths = rawdeaths[with(rawdeaths, order(rawdata$UID)),]
   
   confirmed.ar.us = aggregate(. ~ rawdata$Province_State, rawdata[which(colnames(rawdata)=="X1.22.20"):ncol(rawdata)], FUN = sum)
   
@@ -86,10 +89,11 @@ server = function(input, output, session){
   #confirmed.ar.us = confirmed.ar.us[which(confirmed.ar.us$Province.State != "US"),]
   #deaths.ar.us = deaths.ar.us[which(deaths.ar.us$Province.State != "US"),]
   
-  local.cases = cbind(rawdata$Combined_Key, rawdata$Lat, rawdata$Long_, rawdeaths$Population,
+  local.cases = cbind(rawdata$Province_State,rawdata$Combined_Key, rawdata$Lat, rawdata$Long_, rawdeaths$Population,
                       rawdata[ncol(rawdata)], rawdeaths[ncol(rawdeaths)] )
   
-  colnames(local.cases) = c("Combined_Key", "Lat", "Long_", "Population", "Confirmed", "Deaths")
+  colnames(local.cases) = c("State","Combined_Key", "Lat", "Long_", "Population", "Confirmed", "Deaths")
+  
   #local.cases[which(local.cases$Country_Region == "US"),]
   
   local.cases[which(local.cases$Combined_Key == "Wayne,Michigan,US"),"Long_"] = rawdata[which(rawdata$Combined_Key == "Wayne, Michigan, US"),"Long_"]
@@ -325,7 +329,32 @@ server = function(input, output, session){
     
   })
   
-  
+  output$stateplotNewCases = renderPlot({
+    
+    n = reactive_objects$n
+    if(!is.numeric(reactive_objects$n)){n = which(confirmed$Province.State == "New York")}
+    if(length(n)>1){n = n[2]}
+    
+    i = n
+    x = confirmed[,6:ncol(confirmed)] - confirmed[,5:(ncol(confirmed)-1)]
+    var1 = as.vector(t(confirmed)[6:ncol(confirmed),i])
+    #var1 = as.numeric(var1)
+    #var2 = as.vector(t(x)[,i])
+    
+    library(zoo)
+    var1 = rollmean(as.numeric(var1), 7, na.pad = TRUE)
+    var2 = rollmean(as.vector(t(x)[,i]), 7, na.pad = TRUE)
+    
+    df = data.frame(var1, var2)
+    colnames(df) = c("Total.Cases", "Daily.New.Cases")
+    
+    ggplot(df, aes(x = `Total.Cases`, y = `Daily.New.Cases`))+
+      scale_x_continuous(trans='log10') + scale_y_continuous(trans='log10')+
+      geom_line()+theme_minimal()+#xlim(0,10e5)+ylim(0,10e3)+
+      labs(title=paste0("New Case Growth in: ", confirmed$Province.State[i], ", ", confirmed$Country.Region[i]),
+           y="Daily New Cases (log10 individuals)", 
+           x = "Total Cases (log10 individuals)")
+  })
   
   
   ##############  
