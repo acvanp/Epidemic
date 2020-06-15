@@ -351,7 +351,7 @@ server = function(input, output, session){
     ggplot(df, aes(x = `Total.Cases`, y = `Daily.New.Cases`))+
       scale_x_continuous(trans='log10') + scale_y_continuous(trans='log10')+
       geom_line()+theme_minimal()+#xlim(0,10e5)+ylim(0,10e3)+
-      labs(title=paste0("New Case Growth in: ", confirmed$Province.State[i], ", ", confirmed$Country.Region[i]),
+      labs(title=paste0("New Case Growth in: ", confirmed$Province.State[i], " ", confirmed$Country.Region[i]),
            y="Daily New Cases (log10 individuals)", 
            x = "Total Cases (log10 individuals)")
   })
