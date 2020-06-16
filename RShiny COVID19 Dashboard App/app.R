@@ -253,7 +253,7 @@ server = function(input, output, session){
   ###########################
   # labels for stat/country map
   labs = paste(confirmed$Province.State, confirmed$Country.Region, ": \n", as.character(confirmed[,ncol(confirmed)]), 
-               " confirmed,",  "\n", as.character(deaths[,ncol(deaths)]), " deaths,",  "\n")
+               " confirmed,", as.character(deaths[,ncol(deaths)]), " deaths")
   
   active = data.frame(cbind(deaths[,ncol(deaths)], confirmed[,ncol(confirmed)]))
   active$cols = c()
