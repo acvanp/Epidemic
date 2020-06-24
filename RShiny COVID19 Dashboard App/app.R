@@ -38,7 +38,8 @@ ui <- fluidPage(
                                         column(7, h4("Click a site"), 
                                                leafletOutput("LocalMap", height = "380px"))
                                         ,
-                                        column(5, plotOutput("localplot"))
+                                        column(5, plotOutput("localplot")),
+                                        column(5, plotOutput("localplotNewCases"))
                                         
                                )
                                ,
@@ -431,6 +432,35 @@ server = function(input, output, session){
     
     
   })
+  
+  
+  
+  output$localplotNewCases = renderPlot({
+    
+    m = reactive_objects.2$m
+    if(!is.numeric(reactive_objects.2$m)){
+      m = which(rawdata$Combined_Key == "Alexandria, Virginia, US")}
+    if(length(m)>1){m = m[1]}
+    
+    i = m
+    x = rawdata[,13:ncol(rawdata)] - rawdata[,12:(ncol(rawdata)-1)]
+    var1 = as.vector(t(rawdata)[13:ncol(rawdata),i])
+    
+    library(zoo)
+    var1 = rollmean(as.numeric(var1), 7, na.pad = TRUE)
+    var2 = rollmean(as.vector(t(x)[,i]), 7, na.pad = TRUE)
+    
+    df = data.frame(var1, var2)
+    colnames(df) = c("Total.Cases", "Daily.New.Cases")
+    
+    ggplot(df, aes(x = `Total.Cases`, y = `Daily.New.Cases`))+
+      scale_x_continuous(trans='log10') + scale_y_continuous(trans='log10')+
+      geom_line()+theme_minimal()+#xlim(0,10e5)+ylim(0,10e3)+
+      labs(title=paste0("New Case Growth in: ", rawdata$Combined_Key[i]),
+           y="Daily New Cases (log10 individuals)", 
+           x = "Total Cases (log10 individuals)")
+  })
+  
   
   ############################
   # Bar plots
