@@ -1,5 +1,6 @@
 # Epidemic
-RShiny geospatial JHU data dashboard, and RShiny SIR toy model for small city epidemic
+RShiny geospatial JHU data dashboard, and RShiny SIR toy model for small city epidemic.
+Virus genetic cladograms made with Bioconductor.
 
 Interactive geographic epidimic dashboard:
 https://acvanp.shinyapps.io/COVID-19/
