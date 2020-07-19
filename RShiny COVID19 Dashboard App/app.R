@@ -43,11 +43,14 @@ ui <- fluidPage(
                                         
                                )
                                ,
-                               tabPanel("Top Countries", column(11, plotOutput("TopCountries", height = "400px"))
+                               tabPanel("Top Countries", column(11, plotOutput("TopCountries", height = "400px")),
+                                                                column(11, plotOutput("TopCountriesGrowthRate", height = "400px"))
                                ),
-                               tabPanel("Top US States", column(11, plotOutput("TopStates", height = "400px"))
+                               tabPanel("Top US States", column(11, plotOutput("TopStates", height = "400px")),
+                                                                column(11, plotOutput("TopStatesGrowthRate", height = "400px"))
                                ),
-                               tabPanel("Top US Cities", column(11, plotOutput("TopUSCities", height = "400px"))
+                               tabPanel("Top US Cities", column(11, plotOutput("TopUSCities", height = "400px")),
+                                                                column(11, plotOutput("TopCitiesGrowthRate", height = "400px"))
                                ),
                                
                                tabPanel("Predictive Model & Source",   h4("Link to Coronavirus Predictive Model and\n
@@ -294,7 +297,7 @@ server = function(input, output, session){
   output$stateplot=renderPlot({
     
     n = reactive_objects$n
-    if(!is.numeric(reactive_objects$n)){n = which(confirmed$Province.State == "New York")}
+    if(!is.numeric(reactive_objects$n)){n = which(confirmed$Country.Region == "Global")}
     if(length(n)>1){n = n[2]}
     
     df = data.frame(as.Date(gsub("X", "", colnames(confirmed[,5:ncol(confirmed)])), 
@@ -333,7 +336,7 @@ server = function(input, output, session){
   output$stateplotNewCases = renderPlot({
     
     n = reactive_objects$n
-    if(!is.numeric(reactive_objects$n)){n = which(confirmed$Province.State == "New York")}
+    if(!is.numeric(reactive_objects$n)){n = which(confirmed$Country.Region == "Global")}
     if(length(n)>1){n = n[2]}
     
     i = n
@@ -608,6 +611,82 @@ server = function(input, output, session){
   })
   
   
+  #------------------------------------------
+  # Top Countries by Growth Rate
+  output$TopCountriesGrowthRate=renderPlot({
+    
+    # Bar graph of most virulent contries to go at bottom of page
+    # data 
+    # make sure nrow is the same
+    x = apply((confirmed[,(ncol(confirmed)-7):ncol(confirmed)]),1,mean) - 
+      apply((confirmed[,(ncol(confirmed)-8):(ncol(confirmed)-1)]),1,mean)
+    y = cbind(confirmed$Country.Region, x)
+    y = y[which(confirmed$Province.State == ""),]
+    # order and sort for max 10 countries
+    y = y[rev(order(as.numeric(y[,2])))[1:20],]
+    colnames(y) = c("statename", "confirmedcount")
+    y = data.frame(y)
+    y$confirmedcount = as.numeric(y$confirmedcount)
+    # use ggplot for bar graph based on 
+    # http://www.cookbook-r.com/Graphs/Bar_and_line_graphs_(ggplot2)/
+    
+    ggplot(data=y, aes(x= reorder(statename, -confirmedcount), y= confirmedcount)) +
+      geom_bar(stat="identity", position=position_dodge())  + theme_minimal() +
+      geom_text(
+        aes(label=round(confirmedcount,0)), color="black", position=position_dodge(1), 
+        hjust = -0.1, angle = 90, size=3) +
+      labs(x = "Country", 
+           y = "Growth Rate (mean new cases\n per day in previous week)",
+           title =  "Top Case Growth Rates by Country") + 
+      geom_bar(stat="identity", position=position_dodge(), colour="black") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, size=12, face="bold", colour="black"),
+            axis.title.y = element_text( size=12, face="bold", colour="black")) + 
+      ylim(0, 1.3*max(y$confirmedcount))
+    
+    
+    
+  })
+  
+  
+  #------------------------------------------
+  # Top States by Growth Rate
+  output$TopStatesGrowthRate=renderPlot({
+    
+    # Bar graph of most virulent contries to go at bottom of page
+    # data 
+    # make sure nrow is the same
+    x = apply((confirmed[,(ncol(confirmed)-7):ncol(confirmed)]),1,mean) - 
+      apply((confirmed[,(ncol(confirmed)-8):(ncol(confirmed)-1)]),1,mean)
+    y = cbind(confirmed$Province.State, x)
+    y = y[which(confirmed$Country.Region == "US"),]
+    # order and sort for max 10 countries
+    y = y[rev(order(as.numeric(y[,2])))[1:20],]
+    colnames(y) = c("statename", "confirmedcount")
+    y = data.frame(y)
+    y=y[which(y$statename !=""),]
+    y$confirmedcount = as.numeric(y$confirmedcount)
+    # use ggplot for bar graph based on 
+    # http://www.cookbook-r.com/Graphs/Bar_and_line_graphs_(ggplot2)/
+    
+    ggplot(data=y, aes(x= reorder(statename, -confirmedcount), y= confirmedcount)) +
+      geom_bar(stat="identity", position=position_dodge())  + theme_minimal() +
+      geom_text(
+        aes(label=round(confirmedcount,0)), color="black", position=position_dodge(1), 
+        hjust = -0.1, angle = 90, size=3) +
+      labs(x = "State", 
+           y = "Growth Rate (mean new cases\n per day in previous week)",
+           title =  "Top Case Growth Rates by US State") + 
+      geom_bar(stat="identity", position=position_dodge(), colour="black") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, size=12, face="bold", colour="black"),
+            axis.title.y = element_text( size=12, face="bold", colour="black")) + 
+      ylim(0, 1.3*max(y$confirmedcount))
+    
+    
+    
+  })
+  
+  
+  
   
   # link to SIR epi model
   url1 <- a("RShiny Predictive Model Link", href = "https://acvanp.shinyapps.io/A-B-epi-model/")
@@ -616,6 +695,43 @@ server = function(input, output, session){
   })
   
   
+  
+  #------------------------------------------
+  # Top States by Growth Rate
+  output$TopCitiesGrowthRate=renderPlot({
+    
+    # Bar graph of most virulent contries to go at bottom of page
+    # data 
+    # make sure nrow is the same
+    x = apply((rawdata[,(ncol(rawdata)-7):ncol(rawdata)]),1,mean) - 
+      apply((rawdata[,(ncol(rawdata)-8):(ncol(rawdata)-1)]),1,mean)
+    y = cbind(rawdata$Combined_Key, x)
+    y = y[which(rawdata$Country_Region == "US"),]
+    y = y[which(rawdata$Province_State != ""),]
+    # order and sort for max 10 countries
+    y = y[rev(order(as.numeric(y[,2])))[1:20],]
+    colnames(y) = c("statename", "confirmedcount")
+    y = data.frame(y)
+    y$confirmedcount = as.numeric(y$confirmedcount)
+    # use ggplot for bar graph based on 
+    # http://www.cookbook-r.com/Graphs/Bar_and_line_graphs_(ggplot2)/
+    
+    ggplot(data=y, aes(x= reorder(statename, -confirmedcount), y= confirmedcount)) +
+      geom_bar(stat="identity", position=position_dodge())  + theme_minimal() +
+      geom_text(
+        aes(label=round(confirmedcount,0)), color="black", position=position_dodge(1), 
+        hjust = -0.1, angle = 90, size=3) +
+      labs(x = "City", 
+           y = "Growth Rate (mean new cases\n per day in previous week)",
+           title =  "Top Case Growth Rates by US Municipality") + 
+      geom_bar(stat="identity", position=position_dodge(), colour="black") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, size=12, face="bold", colour="black"),
+            axis.title.y = element_text( size=12, face="bold", colour="black")) + 
+      ylim(0, 1.3*max(y$confirmedcount))
+    
+    
+    
+  })
   
   # link to data source
   url2 <- a("Data from Johns Hopkins University\n https://github.com/CSSEGISandData/COVID-19", 
