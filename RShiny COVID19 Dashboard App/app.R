@@ -82,6 +82,7 @@ server = function(input, output, session){
   rawdeaths = read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv")
   rawdeaths = rawdeaths[which(rawdeaths$Country_Region == "US"), abs(ncol(rawdata)-ncol(rawdeaths)):ncol(rawdeaths)]
   rawdeaths = rawdeaths[with(rawdeaths, order(rawdata$UID)),]
+  rawdeaths = rawdeaths[match(rawdata$Combined_Key, rawdeaths$Combined_Key),]
   
   confirmed.ar.us = aggregate(. ~ rawdata$Province_State, rawdata[which(colnames(rawdata)=="X1.22.20"):ncol(rawdata)], FUN = sum)
   
@@ -411,7 +412,7 @@ server = function(input, output, session){
     colnames(df2) = "date"
     
     df2$confirmed = unlist(rawdata[m,12:ncol(rawdata)])
-    df2$deaths = unlist(rawdeaths[m,13:ncol(rawdeaths)])
+    df2$deaths = unlist(rawdeaths[which(rawdeaths$Combined_Key==rawdata$Combined_Key[m]),13:ncol(rawdeaths)])
     
     df2 = melt(df2, id = "date")
     df2 = df2[which(!is.na(df2$variable )),]
@@ -533,8 +534,7 @@ server = function(input, output, session){
     
     df3 = df3[which(!df3$state  %in% 
                       c("United States Virgin Islands", "US", "Puerto Rico")),]
-    
-    
+  
     # order and sort for max 10 countries
     df3 = df3[rev(order(df3$confirmed))[0:15],]
     
@@ -563,8 +563,6 @@ server = function(input, output, session){
                                         face="bold", colour="black")) + 
       scale_fill_manual( values = c( "gold", "darkred"))
     
-    
-    
   })
   
   #------------------------------------------
@@ -578,9 +576,11 @@ server = function(input, output, session){
     x = x[rev(order(x$Confirmed)),]  
     df3 = data.frame(x$Combined_Key[0:15])
     colnames(df3) = "city"
-    df3$confirmed = x$Confirmed[0:15]
-    df3$deaths = x$Deaths[0:15]
     df3$city = gsub(", US","" ,df3$city)
+
+    df3$confirmed = x$Confirmed[0:15]
+
+    df3$deaths = x$Deaths[0:15]
     
     # order and sort for max 10 countries
     #df3 = df3[rev(order(df3$confirmed))[0:15],]
@@ -652,7 +652,7 @@ server = function(input, output, session){
   # Top States by Growth Rate
   output$TopStatesGrowthRate=renderPlot({
     
-    # Bar graph of most virulent contries to go at bottom of page
+    # Bar graph of most virulent states to go at bottom of page
     # data 
     # make sure nrow is the same
     x = apply((confirmed[,(ncol(confirmed)-7):ncol(confirmed)]),1,mean) - 
@@ -682,25 +682,16 @@ server = function(input, output, session){
       ylim(0, 1.3*max(y$confirmedcount))
     
     
-    
   })
   
-  
-  
-  
-  # link to SIR epi model
-  url1 <- a("RShiny Predictive Model Link", href = "https://acvanp.shinyapps.io/A-B-epi-model/")
-  output$sirModel <- renderUI({
-    tagList("Navigate to:", url1)
-  })
   
   
   
   #------------------------------------------
-  # Top States by Growth Rate
+  # Top cities by Growth Rate
   output$TopCitiesGrowthRate=renderPlot({
     
-    # Bar graph of most virulent contries to go at bottom of page
+    # Bar graph of most virulent cities to go at bottom of page
     # data 
     # make sure nrow is the same
     x = apply((rawdata[,(ncol(rawdata)-7):ncol(rawdata)]),1,mean) - 
@@ -713,6 +704,7 @@ server = function(input, output, session){
     colnames(y) = c("statename", "confirmedcount")
     y = data.frame(y)
     y$confirmedcount = as.numeric(y$confirmedcount)
+    y$statename = gsub(", US", "", y$statename)
     # use ggplot for bar graph based on 
     # http://www.cookbook-r.com/Graphs/Bar_and_line_graphs_(ggplot2)/
     
@@ -730,8 +722,16 @@ server = function(input, output, session){
       ylim(0, 1.3*max(y$confirmedcount))
     
     
-    
   })
+  
+  
+  # link to SIR epi model
+  url1 <- a("RShiny Predictive Model Link", href = "https://acvanp.shinyapps.io/A-B-epi-model/")
+  output$sirModel <- renderUI({
+    tagList("Navigate to:", url1)
+  })
+  
+  
   
   # link to data source
   url2 <- a("Data from Johns Hopkins University\n https://github.com/CSSEGISandData/COVID-19", 
