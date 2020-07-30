@@ -56,19 +56,27 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             numericInput("daysrun", "Time in days the model simulates:", 120),
                                             helpText("More days may slow the model run."),
                                             
-                                            numericInput("asympt.cont", "How contagious is an asymptomatic person? (from 0 to 1):", 0.15),
+                                            
+                                            numericInput("pct.ppe", "What percent of people wear PPE (masks)? (from 0 to 1):", 0.9),
                                             helpText(""),
                                             
-                                            numericInput("sick.cont", "How contagious is a sick person? (from 0 to 1):", 0.52),
+                                            
+                                            numericInput("ppe.effect", "How effective is the PPE/mask at preventing spread? (from 0 to 1):", 0.95),
                                             helpText(""),
                                             
-                                            numericInput("encounter.asymptomatic.nosocdist", "Encounters per day of asymptomatic people who do not practice distancing:", 8),
+                                            numericInput("asympt.cont", "How contagious is an asymptomatic person? (from 0 to 1):", 0.35),
                                             helpText(""),
                                             
-                                            numericInput("encounter.asymptomatic.socdist", "Encounters per day of asymptomatic people who practice distancing:", 0.5),
+                                            numericInput("sick.cont", "How contagious is a sick person? (from 0 to 1):", 0.75),
                                             helpText(""),
                                             
-                                            numericInput("encounter.sick.input", "Encounters per day of people suffering from flu symptoms:", 0.15),
+                                            numericInput("encounter.asymptomatic.nosocdist", "Encounters per day of asymptomatic people who do not practice distancing:", 6),
+                                            helpText(""),
+                                            
+                                            numericInput("encounter.asymptomatic.socdist", "Encounters per day of asymptomatic people who practice distancing:", 1.5),
+                                            helpText(""),
+                                            
+                                            numericInput("encounter.sick.input", "Encounters per day of people suffering from flu symptoms:", 0.4),
                                             helpText(""),
                                             
                                             numericInput("death.chance", "How deadly is the disease (from 0 to 1):", 0.02),
@@ -95,7 +103,7 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             selectInput("virus.evolves.mildness", "Simulate progressively lower death rate as removal increases? ", c("no" = "no", "yes" = "yes")),
                                             helpText("Does the virus evolve to be less deadly?"),
                                             
-                                            numericInput("relax.socdist.mean.sick", "Relax social distancing when new confirmed cases goes below:", 3), 
+                                            numericInput("relax.socdist.mean.sick", "Relax social distancing when new confirmed cases goes below:", 10), 
                                             helpText("weekly mean of daily new confirmed cases")
                                             
                                             
@@ -136,6 +144,12 @@ ui <- fluidPage(shinyjs::useShinyjs(),
                                             
                                             numericInput("daysrun2", "Time in days the model simulates:", 120),
                                             helpText("More days may slow the model run."),
+                                            
+                                            numericInput("pct.ppe2", "What percent of people wear PPE (masks)? (from 0 to 1):", 0.95),
+                                            helpText(""),
+                                            
+                                            numericInput("ppe.effect2", "How effective is the PPE/mask at preventing spread? (from 0 to 1):", 0.95),
+                                            helpText(""),
                                             
                                             numericInput("asympt.cont2", "How contagious is an asymptomatic person? (from 0 to 1):", 0.15),
                                             helpText(""),
@@ -231,6 +245,8 @@ SIR.model = function(ntrials,
                      daysrun,
                      asympt.cont,
                      sick.cont,
+                     pct.ppe,
+                     ppe.effect,
                      encounter.asymptomatic.nosocdist,
                      encounter.asymptomatic.socdist,
                      encounter.sick.input,
@@ -409,17 +425,38 @@ SIR.model = function(ntrials,
         
         if(susceptible[i-1] > 0 && !is.na(rand.sick.encounters)){
           # infections caused by encounters with sick people
-          x = runif(rand.sick.encounters, 0, 1)
+          
+          rand.sick.encounters.ppe = floor(rand.sick.encounters * pct.ppe)
+          
+          rand.sick.encounters.NOppe = rand.sick.encounters - rand.sick.encounters.ppe
+          
+          x = runif(rand.sick.encounters.ppe, 0, 1)
+          
+          y = runif(rand.sick.encounters.NOppe, 0, 1)
+          
           # random interactions within the sick.contagiousness cutoff is a transmission to infected.new
-          infected.new[i] = infected.new[i] + length(x[which(x < sick.cont)])
+          infected.new[i] = infected.new[i] + length(x[which(x < (sick.cont*(1-ppe.effect)))])
+          
+          # again for the no-ppe group (the bad people who don't wear masks)
+          infected.new[i] = infected.new[i] + length(y[which(y < sick.cont)])
+          
         }
         
         # assume asymptomatic people have the chance to infect more people than sick people
         if(susceptible[i-1] > 0 && !is.na(rand.sick.encounters)){
           
-          x = runif(rand.asympt.encounters, 0, 1)
+          rand.asympt.encounters.ppe = floor(rand.asympt.encounters * pct.ppe)
           
-          infected.new[i] = infected.new[i] + length(x[which(x < asympt.cont)])
+          rand.asympt.encounters.NOppe = rand.asympt.encounters - rand.asympt.encounters.ppe
+          
+          x = runif(rand.asympt.encounters.ppe, 0, 1)
+          
+          y = runif(rand.asympt.encounters.NOppe, 0, 1)
+          
+          infected.new[i] = infected.new[i] + length(x[which(x < (asympt.cont * (1-ppe.effect)))])
+          
+          infected.new[i] = infected.new[i] + length(y[which(y < asympt.cont)])
+          
         }else(infected.new[i] = 0)
         
       }else(infected.new[i] =   round( # in the first three days of the model during the incubation period
@@ -569,6 +606,8 @@ SIR.model = function(ntrials,
     daysrun,
     asympt.cont,
     sick.cont,
+    pct.ppe,
+    ppe.effect ,
     encounter.asymptomatic.nosocdist,
     encounter.asymptomatic.socdist,
     encounter.sick,
@@ -610,6 +649,8 @@ SIR.model = function(ntrials,
     "daysrun",
     "asympt.cont",
     "sick.cont",
+    "pct.ppe",
+    "ppe.effect",
     "encounter.asymptomatic.nosocdist",
     "encounter.asymptomatic.socdist",
     "encounter.sick",
@@ -646,6 +687,7 @@ SIR.model = function(ntrials,
   return(x)
   
 }
+
 
 
 ######################################################################
@@ -818,6 +860,8 @@ server <- function(input, output) {
                           input$daysrun,
                           input$asympt.cont,
                           input$sick.cont,
+                          input$pct.ppe,
+                          input$ppe.effect,        
                           input$encounter.asymptomatic.nosocdist,
                           input$encounter.asymptomatic.socdist,
                           input$encounter.sick.input,
@@ -877,6 +921,8 @@ server <- function(input, output) {
                           input$daysrun2,
                           input$asympt.cont2,
                           input$sick.cont2,
+                          input$pct.ppe2,
+                          input$ppe.effect2,
                           input$encounter.asymptomatic.nosocdist2,
                           input$encounter.asymptomatic.socdist2,
                           input$encounter.sick.input2,

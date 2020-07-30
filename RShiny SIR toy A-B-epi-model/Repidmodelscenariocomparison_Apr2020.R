@@ -5,21 +5,23 @@
 #SIR.model()
 x = SIR.model(ntrials = 1, 
               pop = 100000, 
-              daysrun = 100, 
-              asympt.cont = 0.15, 
-              sick.cont = 0.45, 
-              encounter.asymptomatic.nosocdist = 8, 
-              encounter.asymptomatic.socdist = 0.7, 
-              encounter.sick.input = 0.15, 
+              daysrun = 300, 
+              asympt.cont = 0.9, 
+              sick.cont = 0.9,
+              pct.ppe = 0.95,
+              ppe.effect = 0.95,
+              encounter.asymptomatic.nosocdist = 5, 
+              encounter.asymptomatic.socdist = 1.5, 
+              encounter.sick.input = 0.5, 
               death.chance = 0.02, 
-              recover.time = 16, 
-              rate.asymptomatic = 0.2, 
+              recover.time = 21, 
+              rate.asymptomatic = 0.4, 
               incub.pd = 3,
-              take.action = 1000,
+              take.action = 100,
               med.scarcity.factor = 0.9,
               hosp.beds = 1500,
               virus.evolves.mildness = "no",
-              relax.socdist.mean.sick = 10)
+              relax.socdist.mean.sick = 5)
 
 x$deaths.hist
 hist(x$deaths.hist, breaks = 40)
