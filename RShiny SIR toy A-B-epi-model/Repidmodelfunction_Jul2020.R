@@ -1,5 +1,5 @@
 # Alex Van plantinga virus model
-# April 2020
+# July-August 2020
 
 # City coronavirus analysis.R
 # 30 days 104942 people    153 confirmed      7 deaths
@@ -37,6 +37,8 @@ SIR.model = function(ntrials,
   removed.list = list()
   
   sick.hist = c()
+  
+  confirmed.hist = c() # added 8/2/2020 for scenario comparison
   
   deaths.hist = c() # array of deaths for each run of the model, 
   
@@ -192,36 +194,51 @@ SIR.model = function(ntrials,
         if(susceptible[i-1] > 0 && !is.na(rand.sick.encounters)){
          # infections caused by encounters with sick people
           
-          rand.sick.encounters.ppe = floor(rand.sick.encounters * pct.ppe)
+          rand.sick.encounters.ppe = floor(rand.sick.encounters * pct.ppe^2)
           
-          rand.sick.encounters.NOppe = rand.sick.encounters - rand.sick.encounters.ppe
+          rand.sick.encounters.HALFppe = floor(rand.sick.encounters * pct.ppe * (1-pct.ppe) *2 )
+          
+          rand.sick.encounters.NOppe = floor(rand.sick.encounters * (1-pct.ppe)^2)
           
           x = runif(rand.sick.encounters.ppe, 0, 1)
           
-          y = runif(rand.sick.encounters.NOppe, 0, 1)
+          y = runif(rand.sick.encounters.HALFppe, 0, 1)
+          
+          z = runif(rand.sick.encounters.NOppe, 0, 1)
           
           # random interactions within the sick.contagiousness cutoff is a transmission to infected.new
-          infected.new[i] = infected.new[i] + length(x[which(x < (sick.cont*(1-ppe.effect)))])
+          infected.new[i] = infected.new[i] + length(x[which(x < (sick.cont*(1-ppe.effect)^2))])
           
           # again for the no-ppe group (the bad people who don't wear masks)
-          infected.new[i] = infected.new[i] + length(y[which(y < sick.cont)])
+          infected.new[i] = infected.new[i] + length(y[which(y < sick.cont *(1-ppe.effect))])
+          
+          infected.new[i] = infected.new[i] + length(y[which(z < sick.cont)])
           
         }
           
           # assume asymptomatic people have the chance to infect more people than sick people
          if(susceptible[i-1] > 0 && !is.na(rand.sick.encounters)){
            
-           rand.asympt.encounters.ppe = floor(rand.asympt.encounters * pct.ppe)
            
-           rand.asympt.encounters.NOppe = rand.asympt.encounters - rand.asympt.encounters.ppe
+           rand.asympt.encounters.ppe = floor(rand.asympt.encounters * pct.ppe^2)
+           
+           rand.asympt.encounters.HALFppe = floor(rand.asympt.encounters * pct.ppe * (1-pct.ppe) *2 )
+           
+           rand.asympt.encounters.NOppe = floor(rand.asympt.encounters * (1-pct.ppe)^2)
            
            x = runif(rand.asympt.encounters.ppe, 0, 1)
            
-           y = runif(rand.asympt.encounters.NOppe, 0, 1)
+           y = runif(rand.asympt.encounters.HALFppe, 0, 1)
            
-           infected.new[i] = infected.new[i] + length(x[which(x < (asympt.cont * (1-ppe.effect)))])
+           z = runif(rand.asympt.encounters.NOppe, 0, 1)
            
-           infected.new[i] = infected.new[i] + length(y[which(y < asympt.cont)])
+           # random interactions within the asympt.contagiousness cutoff is a transmission to infected.new
+           infected.new[i] = infected.new[i] + length(x[which(x < (asympt.cont*(1-ppe.effect)^2))])
+           
+           # again for the no-ppe group (the bad people who don't wear masks)
+           infected.new[i] = infected.new[i] + length(y[which(y < asympt.cont *(1-ppe.effect))])
+           
+           infected.new[i] = infected.new[i] + length(y[which(z < asympt.cont)])
            
          }else(infected.new[i] = 0)
         
@@ -344,6 +361,8 @@ SIR.model = function(ntrials,
     
     sick.hist = append(sick.hist, confirmed[length(confirmed)])
     
+    confirmed.hist = append(confirmed.hist, confirmed[length(confirmed)])
+    
     # lists
     sick.volume[[p]] = infected.sick
     
@@ -401,6 +420,7 @@ SIR.model = function(ntrials,
     sick.volume,
     inf.max,
     sick.hist,
+    confirmed.hist,
     recovered.list,
     deaths.list,
     confirmed.list,
@@ -444,6 +464,7 @@ SIR.model = function(ntrials,
     "sick.volume",
     "inf.max",
     "sick.hist",
+    "confirmed.hist",
     "recovered.list",
     "deaths.list",
     "confirmed.list",
